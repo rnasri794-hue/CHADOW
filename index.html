@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090b12">
+<title>SHADOW — تحدّاك اليوم</title>
+<style>
+:root{--bg:#090b12;--panel:#121622;--panel2:#191f2e;--purple:#a78bfa;--cyan:#67e8f9;--text:#f4f5fb;--muted:#9ba4b8;--green:#86efac}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#29204d 0,transparent 32%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:720px;margin:auto;padding:22px 16px 40px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:900;letter-spacing:3px;font-size:25px}.brand span{color:var(--purple)}.tag{color:var(--muted);font-size:12px}
+.hero{margin-top:22px;padding:22px;border:1px solid #34314f;border-radius:24px;background:linear-gradient(135deg,#211a3c,#131827 70%);box-shadow:0 15px 50px #0005}
+.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:1px}.hero h1{font-size:29px;margin:10px 0}.hero p{color:#c0c6d7;line-height:1.8;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{background:#ffffff0a;border:1px solid #ffffff12;padding:12px;border-radius:16px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;font-size:22px;margin-top:4px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:26px 2px 12px}.section-title h2{font-size:18px;margin:0}.section-title span{color:var(--muted);font-size:12px}
+.mission{display:flex;gap:12px;align-items:center;padding:15px;margin:10px 0;background:var(--panel);border:1px solid #242a3b;border-radius:18px}.mission.done{border-color:#3d7659;background:#10231d}.symbol{width:45px;height:45px;display:grid;place-items:center;border-radius:14px;background:#26213f;font-size:22px;flex-shrink:0}.mission-copy{flex:1}.mission-copy strong{display:block;font-size:15px}.mission-copy small{color:var(--muted);display:block;margin-top:5px}.xp{color:var(--cyan);font-size:12px;font-weight:800;white-space:nowrap}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer;background:var(--purple);color:#130d25}button:disabled{opacity:.5;cursor:default}.action{width:100%;margin-top:16px;padding:15px;font-size:15px;background:linear-gradient(90deg,var(--purple),var(--cyan))}
+.progress-wrap{height:8px;background:#292f40;border-radius:99px;overflow:hidden;margin-top:12px}.progress{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width .25s}
+.note{font-size:12px;color:var(--muted);line-height:1.8;margin-top:22px;text-align:center}.reset{background:transparent;color:var(--muted);border:1px solid #34394a;padding:7px 10px}
+@media(min-width:600px){main{padding-top:34px}.hero h1{font-size:36px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><div><div class="brand">SHAD<span>OW</span></div><div class="tag">ابني نسختك الأقوى — يوم بيوم</div></div><button class="reset" id="reset">إعادة التحدّي</button></div>
+  <section class="hero">
+    <div class="eyebrow">YOUR DAILY QUEST</div>
+    <h1>كل نهار، خطوة أقوى. ⚡</h1>
+    <p>كمّل مهمّات صغيرة في الواقع، اجمع XP، وطلّع المستوى متاعك. التقدّم يتسجّل على نفس الجهاز.</p>
+    <div class="stats">
+      <div class="stat"><small>المستوى</small><strong id="level">1</strong></div>
+      <div class="stat"><small>مجموع XP</small><strong id="xp">0</strong></div>
+      <div class="stat"><small>مهمّات اليوم</small><strong id="count">0/4</strong></div>
+    </div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  </section>
+  <div class="section-title"><h2>مهمّات اليوم 🎯</h2><span id="date"></span></div>
+  <div id="missions"></div>
+  <button class="action" id="newday">🌙 حضّر تحدّيات اليوم</button>
+  <p class="note">نسخة تجريبية محلية — ما فيهاش حسابات ولا سيرفر. ما تشاركش معلوماتك الشخصية. التحدّيات تتبدّل يوميًا على نفس الجهاز.</p>
+</main>
+<script>
+const quests=[
+ {id:"move",icon:"🏃",title:"تحرّك 10 دقايق",desc:"مشي، تمدّد أو تمرين خفيف يناسبك",xp:25},
+ {id:"learn",icon:"📚",title:"تعلّم حاجة جديدة",desc:"اقرا أو تعلّم 10 دقايق",xp:25},
+ {id:"focus",icon:"🎯",title:"25 دقيقة تركيز",desc:"كمّل مهمّة واحدة من غير تشتّت",xp:30},
+ {id:"kind",icon:"💜",title:"اعمل حاجة باهية",desc:"عاون شخص أو رتّب بلاصتك",xp:20}
+];
+const key="shadow_quest_v1";
+const today=()=>new Date().toLocaleDateString("en-CA");
+function load(){try{return JSON.parse(localStorage.getItem(key))||{date:today(),xp:0,done:[]}}catch(e){return {date:today(),xp:0,done:[]}}}
+let state=load();
+function ensureDay(){if(state.date!==today()){state.date=today();state.done=[];save()}}
+function save(){localStorage.setItem(key,JSON.stringify(state));render()}
+function render(){
+ ensureDay();
+ document.getElementById("date").textContent=new Date().toLocaleDateString("ar-TN",{day:"numeric",month:"short"});
+ document.getElementById("xp").textContent=state.xp;
+ document.getElementById("level").textContent=Math.floor(state.xp/100)+1;
+ document.getElementById("count").textContent=state.done.length+"/4";
+ document.getElementById("progress").style.width=(state.done.length/4*100)+"%";
+ document.getElementById("missions").innerHTML=quests.map(q=>{
+ const done=state.done.includes(q.id);
+ return `<article class="mission ${done?"done":""}"><div class="symbol">${q.icon}</div><div class="mission-copy"><strong>${q.title}</strong><small>${q.desc}</small></div><div><div class="xp">+${q.xp} XP</div><button data-id="${q.id}" ${done?"disabled":""}>${done?"تمّت ✓":"كمّلت"}</button></div></article>`;
+ }).join("");
+ document.querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>{const q=quests.find(x=>x.id===b.dataset.id);if(q&&!state.done.includes(q.id)){state.done.push(q.id);state.xp+=q.xp;save()}}));
+}
+document.getElementById("reset").addEventListener("click",()=>{if(confirm("متأكد تحب تصفّر التقدّم الكل؟")){state={date:today(),xp:0,done:[]};save()}});
+document.getElementById("newday").addEventListener("click",()=>{state.date=today();state.done=[];save();alert("تحدّياتك جاهزة! شدّ صحيح 💪")});
+render();
+</script>
+</body>
+</html>
